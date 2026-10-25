@@ -1,6 +1,6 @@
 /* ==========================================================================
    RoboSpark Academy — site script
-   Small, dependency-free script: trial-class form modal + footer year.
+   Small, dependency-free script: trial-class form + footer year.
 
    Smooth scrolling for internal navigation is handled in CSS
    (html { scroll-behavior: smooth }) — no JavaScript needed for it.
@@ -17,91 +17,33 @@
 	   repository). Each request becomes a row on the sheet "robotex".
 
 	   Both CTA buttons ("Book a free trial class" and "Message us to get
-	   started") open the modal window with this form. The form asks for
-	   name, surname and email.
+	   started") scroll to the form in the last block of the page (#trial).
+	   The form asks for name, surname and email.
 	   ------------------------------------------------------------------ */
 	var SITE_CONFIG = {
 		googleSheetsUrl: "https://script.google.com/macros/s/AKfycbymy7csfZY35SZP53O13DHC3PkIV5vDFC775UsWtwq1iznGw4myiUYPqRRUUVfVwIB7Gg/exec"
 	};
 
-	var modal = document.getElementById("contact-modal");
 	var form = document.getElementById("trial-form");
 	var statusEl = document.getElementById("trial-status");
-	var lastFocused = null;
 
-	/* --- Modal --------------------------------------------------------- */
-	function openModal(trigger) {
-		if (!modal) return;
-		// Remember the element that OPENED the modal (not whatever happened
-		// to be focused) so focus can be restored precisely on close.
-		lastFocused = trigger || document.activeElement;
-
-		modal.hidden = false;
-		document.body.classList.add("modal-open");
-
-		var first = form ? form.querySelector("input[name='name']") : null;
-		if (first) first.focus();
-	}
-
-	function closeModal() {
-		if (!modal || modal.hidden) return;
-		modal.hidden = true;
-		document.body.classList.remove("modal-open");
-		if (lastFocused && lastFocused.isConnected && typeof lastFocused.focus === "function") {
-			lastFocused.focus();
-		}
-	}
-
-	function trapFocus(event) {
-		var focusables = modal.querySelectorAll(
-			'a[href], button:not([disabled]), input:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
-		);
-		if (!focusables.length) return;
-		var first = focusables[0];
-		var last = focusables[focusables.length - 1];
-
-		if (event.shiftKey && document.activeElement === first) {
-			event.preventDefault();
-			last.focus();
-		} else if (!event.shiftKey && document.activeElement === last) {
-			event.preventDefault();
-			first.focus();
-		}
-	}
-
-	/* --- CTA links: open the modal ------------------------------------- */
-	// The href (mailto:) is the fallback when JavaScript is unavailable.
-	document.querySelectorAll("[data-open-form]").forEach(function (link) {
-		link.addEventListener("click", function (event) {
-			if (!modal) return;
-			event.preventDefault();
-			openModal(link);
-		});
-	});
-
-	if (modal) {
-		// Close button + backdrop
-		modal.querySelectorAll("[data-modal-close]").forEach(function (el) {
-			el.addEventListener("click", closeModal);
-		});
-
-		// Escape closes, Tab cycles inside the dialog
-		document.addEventListener("keydown", function (event) {
-			if (modal.hidden) return;
-			if (event.key === "Escape") {
-				event.preventDefault();
-				closeModal();
-			} else if (event.key === "Tab") {
-				trapFocus(event);
+	/* --- CTA links: scroll (CSS does it) and focus the first field ------ */
+	document.querySelectorAll('a[href="#trial"]').forEach(function (link) {
+		link.addEventListener("click", function () {
+			var first = form ? form.querySelector("input[name='name']") : null;
+			if (first) {
+				setTimeout(function () {
+					try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); }
+				}, 600);
 			}
 		});
-	}
+	});
 
 	/* --- Form ---------------------------------------------------------- */
 	function setStatus(text, kind) {
 		if (!statusEl) return;
 		statusEl.textContent = text;
-		statusEl.className = "modal__status" + (kind ? " " + kind : "");
+		statusEl.className = "trial-form__status" + (kind ? " " + kind : "");
 	}
 
 	if (form) {
@@ -127,7 +69,7 @@
 			}
 
 			if (!SITE_CONFIG.googleSheetsUrl) {
-				setStatus("Form is not connected yet. Please email us instead.", "err");
+				setStatus("The form is not connected yet. Please email us instead.", "err");
 				return;
 			}
 
@@ -144,11 +86,16 @@
 				submittedAtLocal: new Date().toLocaleString("ru-RU")
 			};
 
+			// Do not wait forever if the network hangs.
+			var controller = typeof AbortController === "function" ? new AbortController() : null;
+			var timer = controller ? setTimeout(function () { controller.abort(); }, 25000) : null;
+
 			// text/plain avoids the CORS preflight request, which Apps Script does not answer.
 			fetch(SITE_CONFIG.googleSheetsUrl, {
 				method: "POST",
 				headers: { "Content-Type": "text/plain;charset=utf-8" },
-				body: JSON.stringify(payload)
+				body: JSON.stringify(payload),
+				signal: controller ? controller.signal : undefined
 			}).then(function (response) {
 				if (!response.ok) throw new Error("HTTP " + response.status);
 				form.reset();
@@ -156,6 +103,7 @@
 			}).catch(function () {
 				setStatus("Could not send the request. Please try again or email us.", "err");
 			}).finally(function () {
+				if (timer) clearTimeout(timer);
 				button.disabled = false;
 			});
 		});

@@ -948,35 +948,39 @@ body.modal-open { overflow: hidden; }
 }
 
 
-/* 10b. Trial-class form inside the modal
+/* 10b. Trial-class form (inside the closing block)
    ========================================================================== */
-.modal__form {
+#trial { scroll-margin-top: 1.25rem; }
+
+.trial-form {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
-	padding: clamp(1.1rem, 3vw, 1.6rem);
-	background: var(--gray-50);
+	width: 100%;
+	max-width: 30rem;
+	margin-top: .5rem;
+	text-align: left;
 }
 
-.modal__form .field-row {
+.trial-form__row {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 1rem;
 }
 
-.field {
+.trial-field {
 	display: flex;
 	flex-direction: column;
 	gap: .4rem;
-	color: var(--navy);
+	color: var(--on-navy);
 	font-size: .9rem;
 	font-weight: 700;
 }
 
-.field input {
+.trial-field input {
 	min-height: 3rem;
 	padding: .8rem 1rem;
-	border: 1.5px solid var(--gray-200);
+	border: 1.5px solid transparent;
 	border-radius: var(--radius-sm);
 	background: var(--white);
 	color: var(--ink);
@@ -984,13 +988,13 @@ body.modal-open { overflow: hidden; }
 	font-weight: 500;
 }
 
-.field input:focus {
+.trial-field input:focus {
 	outline: none;
-	border-color: var(--cobalt);
-	box-shadow: 0 0 0 3px rgba(54, 92, 203, .18);
+	border-color: var(--yellow);
+	box-shadow: 0 0 0 3px rgba(246, 196, 83, .35);
 }
 
-.field input.invalid { border-color: #c53030; }
+.trial-field input.invalid { border-color: #ff8a80; }
 
 .hp {
 	position: absolute;
@@ -1000,24 +1004,23 @@ body.modal-open { overflow: hidden; }
 	opacity: 0;
 }
 
-.modal__form .btn { align-self: stretch; justify-content: center; }
-.modal__form .btn[disabled] { opacity: .6; cursor: progress; }
+.trial-form .btn { width: 100%; justify-content: center; margin-top: .25rem; }
+.trial-form .btn[disabled] { opacity: .6; cursor: progress; }
 
-.modal__status {
+.trial-form__status {
 	min-height: 1.4em;
 	margin: 0;
-	font-size: .95rem;
-	font-weight: 600;
+	font-weight: 700;
 	text-align: center;
 }
 
-.modal__status.ok { color: #1f7a45; }
-.modal__status.err { color: #b3261e; }
+.trial-form__status.ok { color: #8fe3b0; }
+.trial-form__status.err { color: #ffb4ab; }
 
-.modal__form .modal__fallback { padding: 0; }
+.trial-form .closing__note { text-align: center; font-size: .85rem; }
 
 @media (max-width: 520px) {
-	.modal__form .field-row { grid-template-columns: 1fr; }
+	.trial-form__row { grid-template-columns: 1fr; }
 }
 
 
