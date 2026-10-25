@@ -1007,6 +1007,13 @@ body.modal-open { overflow: hidden; }
 .trial-form .btn { width: 100%; justify-content: center; margin-top: .25rem; }
 .trial-form .btn[disabled] { opacity: .6; cursor: progress; }
 
+.trial-form__hint {
+	margin: 0;
+	color: var(--on-navy-muted);
+	font-size: .9rem;
+	text-align: center;
+}
+
 .trial-form__status {
 	min-height: 1.4em;
 	margin: 0;

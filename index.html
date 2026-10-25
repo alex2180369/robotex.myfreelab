@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
+	<meta name="google" content="notranslate">
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -19,7 +20,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 
-	<link rel="stylesheet" href="css/styles.css?v=4">
+	<link rel="stylesheet" href="css/styles.css?v=6">
 </head>
 
 <body>
@@ -309,16 +310,17 @@
 							</p>
 
 							<form class="trial-form" id="trial-form" novalidate>
+								<p class="trial-form__hint">Please fill in the form in English, using Latin letters only.</p>
 								<div class="trial-form__row">
 									<label class="trial-field">Name
-										<input type="text" name="name" autocomplete="given-name" required maxlength="60">
+										<input type="text" name="name" lang="en" autocapitalize="words" spellcheck="false" autocomplete="given-name" required maxlength="60">
 									</label>
 									<label class="trial-field">Surname
-										<input type="text" name="surname" autocomplete="family-name" required maxlength="60">
+										<input type="text" name="surname" lang="en" autocapitalize="words" spellcheck="false" autocomplete="family-name" required maxlength="60">
 									</label>
 								</div>
 								<label class="trial-field">Email
-									<input type="email" name="email" autocomplete="email" required maxlength="100">
+									<input type="email" name="email" lang="en" autocapitalize="none" spellcheck="false" autocomplete="email" required maxlength="100">
 								</label>
 								<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 								<button class="btn btn--primary" type="submit" id="trial-submit" translate="no">Book my free class</button>
@@ -364,6 +366,6 @@
 		</div>
 	</footer>
 
-	<script src="js/main.js?v=4" defer></script>
+	<script src="js/main.js?v=6" defer></script>
 </body>
 </html>

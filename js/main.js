@@ -55,16 +55,26 @@
 			// Trap for bots: a real visitor never sees this field.
 			if (data.website) return;
 
+			// English only: names in Latin letters, ASCII email. Cyrillic is rejected with a clear message.
+			var NAME_RE = /^[A-Za-z][A-Za-z .\u0027\u2019-]{1,59}$/;
+			var EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
 			var bad = false;
+			var nonLatin = false;
 			["name", "surname", "email"].forEach(function (key) {
 				var field = form.elements[key];
 				var value = (data[key] || "").trim();
-				var ok = key === "email" ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) : value.length >= 2;
+				var ok = (key === "email" ? EMAIL_RE : NAME_RE).test(value);
+				if (!ok && /[^\u0000-\u007F]/.test(value)) nonLatin = true;
 				field.classList.toggle("invalid", !ok);
 				if (!ok) bad = true;
 			});
 			if (bad) {
-				setStatus("Please fill in your name, surname and a valid email.", "err");
+				setStatus(
+					nonLatin
+						? "Please use English (Latin) letters only, for example Anna Petrova."
+						: "Please fill in your name, surname and a valid email in English.",
+					"err"
+				);
 				var firstBad = form.querySelector(".invalid");
 				if (firstBad) firstBad.focus();
 				return;
