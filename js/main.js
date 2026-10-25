@@ -65,6 +65,8 @@
 			});
 			if (bad) {
 				setStatus("Please fill in your name, surname and a valid email.", "err");
+				var firstBad = form.querySelector(".invalid");
+				if (firstBad) firstBad.focus();
 				return;
 			}
 
@@ -74,7 +76,9 @@
 			}
 
 			var button = form.querySelector("button[type='submit']");
+			var idleLabel = button.textContent;
 			button.disabled = true;
+			button.textContent = "Sending…";
 			setStatus("Sending…");
 
 			var payload = {
@@ -99,12 +103,15 @@
 			}).then(function (response) {
 				if (!response.ok) throw new Error("HTTP " + response.status);
 				form.reset();
+				button.textContent = "Request sent ✓";
 				setStatus("Thank you! We got your request and will reply by email soon.", "ok");
 			}).catch(function () {
+				button.textContent = "Not sent, try again";
 				setStatus("Could not send the request. Please try again or email us.", "err");
 			}).finally(function () {
 				if (timer) clearTimeout(timer);
 				button.disabled = false;
+				setTimeout(function () { button.textContent = idleLabel; }, 6000);
 			});
 		});
 	}
