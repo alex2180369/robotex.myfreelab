@@ -1,6 +1,6 @@
 /* ==========================================================================
    RoboSpark Academy — site script
-   Small, dependency-free script: contact form modal + footer year.
+   Small, dependency-free script: trial-class form modal + footer year.
 
    Smooth scrolling for internal navigation is handled in CSS
    (html { scroll-behavior: smooth }) — no JavaScript needed for it.
@@ -12,66 +12,35 @@
 	/* ------------------------------------------------------------------
 	   SITE CONFIGURATION — EDIT HERE
 
-	   formUrl is the ONE place where the contact / trial form is set.
+	   googleSheetsUrl is the address of the Google Apps Script web app that
+	   receives the form (see google-apps-script/Code.gs in the project
+	   repository). Each request becomes a row on the sheet "robotex".
 
 	   Both CTA buttons ("Book a free trial class" and "Message us to get
-	   started") open a modal window with this Yandex Form embedded in an
-	   iframe. The form asks for name, surname and email.
-
-	   • Current value is the form created for this project:
-	         https://forms.yandex.ru/u/6ad39c08852af3b798c7a1b8
-	     To use another form, replace it with your published form URL
-	     (Yandex Forms → Share → "Встроить на сайт" / publish link).
-	   • Answers are collected by Yandex Forms itself. View them at
-	     forms.yandex.ru → your form → tab "Ответы" (table view) and
-	     export to XLSX / CSV / JSON. See README.md → "Getting the data".
-	   • The href attributes in index.html are no-JavaScript fallbacks
-	     (they open the form directly) — keep them in sync.
+	   started") open the modal window with this form. The form asks for
+	   name, surname and email.
 	   ------------------------------------------------------------------ */
 	var SITE_CONFIG = {
-		formUrl: "https://forms.yandex.ru/u/6ad39c08852af3b798c7a1b8"
+		googleSheetsUrl: "https://script.google.com/macros/s/AKfycbymy7csfZY35SZP53O13DHC3PkIV5vDFC775UsWtwq1iznGw4myiUYPqRRUUVfVwIB7Gg/exec"
 	};
 
 	var modal = document.getElementById("contact-modal");
-	var frame = modal ? modal.querySelector("[data-form-frame]") : null;
+	var form = document.getElementById("trial-form");
+	var statusEl = document.getElementById("trial-status");
 	var lastFocused = null;
-	var frameLoaded = false;
-
-	/* The official Yandex Forms embed snippet (keep it working together
-	   with the dynamic modal: embed.js resizes the frame to the full form
-	   height via postMessage). */
-	function loadYandexEmbed() {
-		if (document.querySelector('script[src*="forms.yandex.ru/_static/embed.js"]')) return;
-		var script = document.createElement("script");
-		script.src = "https://forms.yandex.ru/_static/embed.js";
-		document.head.appendChild(script);
-	}
 
 	/* --- Modal --------------------------------------------------------- */
 	function openModal(trigger) {
-		if (!modal || !SITE_CONFIG.formUrl) return;
+		if (!modal) return;
 		// Remember the element that OPENED the modal (not whatever happened
 		// to be focused) so focus can be restored precisely on close.
 		lastFocused = trigger || document.activeElement;
 
-		// Set the iframe only once, on the first open — no third-party
-		// request happens until the visitor asks for the form.
-		if (!frameLoaded && frame) {
-			loadYandexEmbed(); // official snippet: script before the iframe
-			var idMatch = SITE_CONFIG.formUrl.replace(/\/+$/, "").match(/\/([A-Za-z0-9]+)$/);
-			frame.setAttribute(
-				"src",
-				SITE_CONFIG.formUrl + (SITE_CONFIG.formUrl.indexOf("?") > -1 ? "&" : "?") + "iframe=1"
-			);
-			frame.setAttribute("name", "ya-form-" + (idMatch ? idMatch[1] : "contact"));
-			frameLoaded = true;
-		}
-
 		modal.hidden = false;
 		document.body.classList.add("modal-open");
 
-		var closeBtn = modal.querySelector(".modal__close");
-		if (closeBtn) closeBtn.focus();
+		var first = form ? form.querySelector("input[name='name']") : null;
+		if (first) first.focus();
 	}
 
 	function closeModal() {
@@ -85,7 +54,7 @@
 
 	function trapFocus(event) {
 		var focusables = modal.querySelectorAll(
-			'a[href], button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'
+			'a[href], button:not([disabled]), input:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
 		);
 		if (!focusables.length) return;
 		var first = focusables[0];
@@ -100,20 +69,14 @@
 		}
 	}
 
-	/* --- CTA links: sync href + open the modal ------------------------- */
+	/* --- CTA links: open the modal ------------------------------------- */
+	// The href (mailto:) is the fallback when JavaScript is unavailable.
 	document.querySelectorAll("[data-open-form]").forEach(function (link) {
-		if (SITE_CONFIG.formUrl) link.setAttribute("href", SITE_CONFIG.formUrl);
 		link.addEventListener("click", function (event) {
-			if (!SITE_CONFIG.formUrl) return; // no config → plain link behaviour
+			if (!modal) return;
 			event.preventDefault();
 			openModal(link);
 		});
-	});
-
-	// Fallback link inside the modal keeps opening the form in a new tab,
-	// but its href still follows SITE_CONFIG.formUrl.
-	document.querySelectorAll("[data-form-href]").forEach(function (link) {
-		if (SITE_CONFIG.formUrl) link.setAttribute("href", SITE_CONFIG.formUrl);
 	});
 
 	if (modal) {
@@ -131,6 +94,70 @@
 			} else if (event.key === "Tab") {
 				trapFocus(event);
 			}
+		});
+	}
+
+	/* --- Form ---------------------------------------------------------- */
+	function setStatus(text, kind) {
+		if (!statusEl) return;
+		statusEl.textContent = text;
+		statusEl.className = "modal__status" + (kind ? " " + kind : "");
+	}
+
+	if (form) {
+		form.addEventListener("submit", function (event) {
+			event.preventDefault();
+			var data = {};
+			new FormData(form).forEach(function (value, key) { data[key] = String(value); });
+
+			// Trap for bots: a real visitor never sees this field.
+			if (data.website) return;
+
+			var bad = false;
+			["name", "surname", "email"].forEach(function (key) {
+				var field = form.elements[key];
+				var value = (data[key] || "").trim();
+				var ok = key === "email" ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) : value.length >= 2;
+				field.classList.toggle("invalid", !ok);
+				if (!ok) bad = true;
+			});
+			if (bad) {
+				setStatus("Please fill in your name, surname and a valid email.", "err");
+				return;
+			}
+
+			if (!SITE_CONFIG.googleSheetsUrl) {
+				setStatus("Form is not connected yet. Please email us instead.", "err");
+				return;
+			}
+
+			var button = form.querySelector("button[type='submit']");
+			button.disabled = true;
+			setStatus("Sending…");
+
+			var payload = {
+				site: "robotex.myfreelab.ru",
+				name: data.name.trim() + " " + data.surname.trim(),
+				contact: data.email.trim(),
+				comment: "Free trial class request",
+				page: window.location.href,
+				submittedAtLocal: new Date().toLocaleString("ru-RU")
+			};
+
+			// text/plain avoids the CORS preflight request, which Apps Script does not answer.
+			fetch(SITE_CONFIG.googleSheetsUrl, {
+				method: "POST",
+				headers: { "Content-Type": "text/plain;charset=utf-8" },
+				body: JSON.stringify(payload)
+			}).then(function (response) {
+				if (!response.ok) throw new Error("HTTP " + response.status);
+				form.reset();
+				setStatus("Thank you! We got your request and will reply by email soon.", "ok");
+			}).catch(function () {
+				setStatus("Could not send the request. Please try again or email us.", "err");
+			}).finally(function () {
+				button.disabled = false;
+			});
 		});
 	}
 

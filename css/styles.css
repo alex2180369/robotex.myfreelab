@@ -948,6 +948,79 @@ body.modal-open { overflow: hidden; }
 }
 
 
+/* 10b. Trial-class form inside the modal
+   ========================================================================== */
+.modal__form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: clamp(1.1rem, 3vw, 1.6rem);
+	background: var(--gray-50);
+}
+
+.modal__form .field-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: .4rem;
+	color: var(--navy);
+	font-size: .9rem;
+	font-weight: 700;
+}
+
+.field input {
+	min-height: 3rem;
+	padding: .8rem 1rem;
+	border: 1.5px solid var(--gray-200);
+	border-radius: var(--radius-sm);
+	background: var(--white);
+	color: var(--ink);
+	font: inherit;
+	font-weight: 500;
+}
+
+.field input:focus {
+	outline: none;
+	border-color: var(--cobalt);
+	box-shadow: 0 0 0 3px rgba(54, 92, 203, .18);
+}
+
+.field input.invalid { border-color: #c53030; }
+
+.hp {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.modal__form .btn { align-self: stretch; justify-content: center; }
+.modal__form .btn[disabled] { opacity: .6; cursor: progress; }
+
+.modal__status {
+	min-height: 1.4em;
+	margin: 0;
+	font-size: .95rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.modal__status.ok { color: #1f7a45; }
+.modal__status.err { color: #b3261e; }
+
+.modal__form .modal__fallback { padding: 0; }
+
+@media (max-width: 520px) {
+	.modal__form .field-row { grid-template-columns: 1fr; }
+}
+
+
 /* 11. Motion preferences
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {

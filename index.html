@@ -19,7 +19,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 
-	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/styles.css?v=2">
 </head>
 
 <body>
@@ -90,12 +90,12 @@
 							Clicking this CTA (and the final CTA) opens a modal window
 							with the embedded Yandex Form (fields: name, surname, email).
 							To configure the form, edit ONE place:
-							    js/main.js  →  SITE_CONFIG.formUrl
+							    js/main.js  →  SITE_CONFIG.googleSheetsUrl
 							The href below is a no-JavaScript fallback (opens the form
 							directly) — keep it in sync.
 							──────────────────────────────────────────────────────────
 						-->
-						<a class="btn btn--primary" href="https://forms.yandex.ru/u/6ad39c08852af3b798c7a1b8" data-open-form>
+						<a class="btn btn--primary" href="mailto:alex2180369@gmail.com?subject=Free%20trial%20class" data-open-form>
 							Book a free trial class
 							<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
 								<path d="M4 12h15M13 6l6 6-6 6"/>
@@ -320,9 +320,9 @@
 							<!--
 								── CONTACT FORM (Yandex Forms) ────────────────────────────
 								Same embedded form as the hero CTA.
-								Configure it in ONE place: js/main.js → SITE_CONFIG.formUrl
+								Configure it in ONE place: js/main.js → SITE_CONFIG.googleSheetsUrl
 							-->
-							<a class="btn btn--primary" href="https://forms.yandex.ru/u/6ad39c08852af3b798c7a1b8" data-open-form>
+							<a class="btn btn--primary" href="mailto:alex2180369@gmail.com?subject=Free%20trial%20class" data-open-form>
 								Message us to get started
 								<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
 									<path d="M4 12h15M13 6l6 6-6 6"/>
@@ -368,9 +368,9 @@
 	</footer>
 
 	<!-- ══════════════════════════════════════════════════════════════════
-	     Contact form modal — embeds the Yandex Form (SITE_CONFIG.formUrl)
-	     in js/main.js. The iframe loads only when the modal is opened.
-	     Without JavaScript both CTA links open the form directly.
+	     Contact form modal — a native form that writes to Google Sheets
+	     (SITE_CONFIG.googleSheetsUrl in js/main.js).
+	     Without JavaScript both CTA links open an email instead.
 	     ══════════════════════════════════════════════════════════════════ -->
 	<div class="modal" id="contact-modal" hidden>
 		<div class="modal__backdrop" data-modal-close></div>
@@ -389,22 +389,26 @@
 				</button>
 			</header>
 
-			<div class="modal__frame">
-				<iframe
-					class="modal__iframe"
-					title="Contact form — name, surname and email"
-					data-form-frame></iframe>
-			</div>
-
-			<p class="modal__fallback">
-				Form not loading?
-				<a href="https://forms.yandex.ru/u/6ad39c08852af3b798c7a1b8" target="_blank" rel="noopener" data-form-href>
-					Open it in a new tab
-				</a>.
-			</p>
+			<form class="modal__form" id="trial-form" novalidate>
+				<div class="field-row">
+					<label class="field">Name
+						<input type="text" name="name" autocomplete="given-name" required maxlength="60">
+					</label>
+					<label class="field">Surname
+						<input type="text" name="surname" autocomplete="family-name" required maxlength="60">
+					</label>
+				</div>
+				<label class="field">Email
+					<input type="email" name="email" autocomplete="email" required maxlength="100">
+				</label>
+				<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+				<button class="btn btn--primary" type="submit">Book my free class</button>
+				<p class="modal__status" id="trial-status" role="status" aria-live="polite"></p>
+				<p class="modal__fallback">By sending the form you agree that we use your data to contact you. This is a training project: the school is fictional.</p>
+			</form>
 		</div>
 	</div>
 
-	<script src="js/main.js" defer></script>
+	<script src="js/main.js?v=2" defer></script>
 </body>
 </html>

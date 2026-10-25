@@ -1,5 +1,8 @@
 # RoboSpark Academy — landing page
 
+> **Update:** the Yandex Form was replaced by a native form. Requests are sent to a Google Sheet through Google Apps Script (`SITE_CONFIG.googleSheetsUrl` in `js/main.js`, sheet `robotex`). The sections below that mention Yandex Forms describe the previous version.
+
+
 A modern, responsive, conversion-focused single-page landing site for **RoboSpark
 Academy**, a *fictional* children's robotics school in Kazan, Russia (ages 6–10).
 
